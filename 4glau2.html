@@ -221,7 +221,6 @@
             margin-top: 32px;
             color: #6c7a91;
         }
-        /* Cầu vồng nhấp nháy */
         @keyframes rainbow {
             0% { color: red; text-shadow: 0 0 2px red; }
             14% { color: orange; text-shadow: 0 0 2px orange; }
@@ -271,7 +270,7 @@
     </div>
     <div class="footer">
         🔒 Bảo vệ bằng mật khẩu | 
-        <span class="rainbow-text" id="hitCounter"></span>
+        <img src="https://hits.dwyl.com/4g-unlimited-data/4glau1/4glau2.svg?style=flat-square&label=👀" class="rainbow-text" style="height: 24px; vertical-align: middle;" />
     </div>
 </div>
 
@@ -415,19 +414,6 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
             createFalling(zone, 'spark');
         }
     }, 130);
-
-    // Lấy số lượt xem từ hitcounter.pythonanywhere.com và hiển thị dưới dạng số
-    async function fetchHitCount() {
-        const url = 'https://hitcounter.pythonanywhere.com/count/count?url=https://4g-unlimited-data.github.io/4glau1/4glau2.html';
-        try {
-            const response = await fetch(url);
-            const count = await response.text();
-            document.getElementById('hitCounter').innerText = count;
-        } catch (error) {
-            document.getElementById('hitCounter').innerText = '0';
-        }
-    }
-    fetchHitCount();
 </script>
 </body>
 </html>
