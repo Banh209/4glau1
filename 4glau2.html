@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Mật khẩu · Config</title>
-    <!-- Hit Kounter -->
-    <script src="https://cdn.jsdelivr.net/npm/hit-kounter@0.1.0/dist/hit-kounter.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body {
@@ -223,23 +221,22 @@
             margin-top: 32px;
             color: #6c7a91;
         }
-        /* Cầu vồng nhấp nháy cho chữ "lượt xem" */
+        /* Cầu vồng nhấp nháy */
         @keyframes rainbow {
-            0% { color: red; text-shadow: 0 0 3px red; }
-            14% { color: orange; text-shadow: 0 0 3px orange; }
-            28% { color: yellow; text-shadow: 0 0 3px yellow; }
-            42% { color: green; text-shadow: 0 0 3px green; }
-            57% { color: cyan; text-shadow: 0 0 3px cyan; }
-            71% { color: blue; text-shadow: 0 0 3px blue; }
-            85% { color: violet; text-shadow: 0 0 3px violet; }
-            100% { color: red; text-shadow: 0 0 3px red; }
+            0% { color: red; text-shadow: 0 0 2px red; }
+            14% { color: orange; text-shadow: 0 0 2px orange; }
+            28% { color: yellow; text-shadow: 0 0 2px yellow; }
+            42% { color: green; text-shadow: 0 0 2px green; }
+            57% { color: cyan; text-shadow: 0 0 2px cyan; }
+            71% { color: blue; text-shadow: 0 0 2px blue; }
+            85% { color: violet; text-shadow: 0 0 2px violet; }
+            100% { color: red; text-shadow: 0 0 2px red; }
         }
         .rainbow-text {
             animation: rainbow 1.5s infinite linear;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
-        /* Nhấp nháy cầu vồng cho dòng "NHẬP KHÓA ĐỂ XEM CONFIG" */
         .sub {
             animation: rainbow 1.5s infinite linear;
             font-weight: bold;
@@ -274,8 +271,7 @@
     </div>
     <div class="footer">
         🔒 Bảo vệ bằng mật khẩu | 
-        <span data-hk-page="current" style="font-weight: bold;">0</span> 
-        <span class="rainbow-text">lượt xem</span>
+        <span class="rainbow-text" id="hitCounter"></span>
     </div>
 </div>
 
@@ -419,6 +415,19 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
             createFalling(zone, 'spark');
         }
     }, 130);
+
+    // Lấy số lượt xem từ hitcounter.pythonanywhere.com và hiển thị dưới dạng số
+    async function fetchHitCount() {
+        const url = 'https://hitcounter.pythonanywhere.com/count/count?url=https://4g-unlimited-data.github.io/4glau1/4glau2.html';
+        try {
+            const response = await fetch(url);
+            const count = await response.text();
+            document.getElementById('hitCounter').innerText = count;
+        } catch (error) {
+            document.getElementById('hitCounter').innerText = '0';
+        }
+    }
+    fetchHitCount();
 </script>
 </body>
 </html>
