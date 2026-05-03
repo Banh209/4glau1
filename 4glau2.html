@@ -55,18 +55,6 @@
         @keyframes fall {
             to { transform: translateY(100vh) rotate(360deg); opacity: 0.2; }
         }
-        .bird {
-            position: fixed;
-            font-size: 24px;
-            pointer-events: none;
-            z-index: 10000;
-            animation: fly 1.8s ease-out forwards;
-            filter: drop-shadow(0 0 4px white);
-        }
-        @keyframes fly {
-            0% { transform: translate(0, 0) scale(0.6); opacity: 1; }
-            100% { transform: translate(var(--tx, 150px), var(--ty, -180px)) scale(1.3); opacity: 0; }
-        }
         .flash {
             position: fixed;
             top: 0;
@@ -77,10 +65,9 @@
             pointer-events: none;
             z-index: 9999;
             opacity: 0;
-            transition: opacity 0.2s ease-out;
-            box-shadow: 0 0 50px cyan;
+            transition: opacity 0.15s ease-out;
         }
-        .flash.active { opacity: 0.7; }
+        .flash.active { opacity: 0.8; }
         .card {
             background: rgba(20, 30, 45, 0.75);
             backdrop-filter: blur(14px);
@@ -116,6 +103,8 @@
         .sub {
             text-align: center;
             color: #9ca3af;
+            animation: rainbow 1.5s infinite linear;
+            font-weight: bold;
             font-size: 0.7rem;
             letter-spacing: 2px;
             background: #11182780;
@@ -182,23 +171,59 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
             display: none;
         }
-        .config-content {
-            background: #00000050;
-            padding: 16px;
-            border-radius: 24px;
+        .platform-card {
+            background: #1e293b;
+            border-radius: 32px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #38bdf8;
+        }
+        .platform-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: #0f172a;
+            transition: 0.2s;
+        }
+        .platform-header:hover { background: #1e2a3e; }
+        .platform-header .emoji { font-size: 32px; }
+        .platform-header .name { font-size: 1.3rem; }
+        .platform-content {
+            max-height: 0;
+            padding: 0 20px;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+            overflow: hidden;
+            background: #0a0f1c;
+        }
+        .platform-content.show {
+            max-height: 500px;
+            padding: 20px;
+        }
+        .config-wrapper {
+            max-height: 80px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 16px;
+            border: 1px solid #2d3a5e;
+            border-radius: 20px;
+            background: #00000060;
+        }
+        .config-text {
+            padding: 14px;
             font-family: 'Courier New', monospace;
             font-size: 12px;
-            color: rgba(185, 249, 245, 0.25);
-            text-shadow: 0 0 6px rgba(0,0,0,0.8);
+            color: rgba(185, 249, 245, 0.3);
             white-space: pre-wrap;
             word-break: break-all;
-            margin-bottom: 20px;
-            border: 1px solid #2d3a5e;
-            user-select: none;
-            filter: blur(5px);
+            filter: blur(4px);
             transition: filter 0.3s ease, color 0.3s ease;
         }
-        .config-content.revealed {
+        .config-text.revealed {
             filter: blur(0);
             color: #b9f9f5;
             text-shadow: 0 0 2px cyan;
@@ -206,7 +231,7 @@
         .copy-btn {
             background: linear-gradient(95deg, #10b981, #047857);
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             border-radius: 60px;
             font-weight: bold;
             display: flex;
@@ -233,17 +258,12 @@
         }
         .rainbow-text {
             animation: rainbow 1.5s infinite linear;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        .sub {
-            animation: rainbow 1.5s infinite linear;
-            font-weight: bold;
         }
         @media (max-width: 520px) {
             .card { padding: 32px 18px 40px; }
             h2 { font-size: 1.7rem; }
-            .bird { font-size: 20px; }
+            .platform-header .name { font-size: 1.1rem; }
+            .config-wrapper { max-height: 70px; }
         }
     </style>
 </head>
@@ -264,14 +284,8 @@
     <div id="errorMsg" class="error">❌ Sai mật khẩu, thử lại.</div>
     <div id="spinner" class="loader"></div>
 
-    <div id="resultPanel" class="result">
-        <div class="config-content" id="configText"></div>
-        <button id="copyBtn" class="copy-btn">📋 Sao chép nội dung</button>
-    </div>
-    <div class="footer">
-        🔒 Bảo vệ bằng mật khẩu | 
-        <span class="rainbow-text" id="hitCounter">0</span>
-    </div>
+    <div id="resultPanel" class="result"></div>
+    <div class="footer">🔒 Bảo vệ bằng mật khẩu</div>
 </div>
 
 <script>
@@ -287,42 +301,78 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
     const errorMsg = document.getElementById('errorMsg');
     const spinner = document.getElementById('spinner');
     const resultPanel = document.getElementById('resultPanel');
-    const configTextDiv = document.getElementById('configText');
-    const copyBtn = document.getElementById('copyBtn');
+
+    // Phát hiện hệ điều hành
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(userAgent);
 
     function flashScreen() {
         let flash = document.getElementById('flashOverlay');
         flash.classList.add('active');
-        setTimeout(() => flash.classList.remove('active'), 250);
+        setTimeout(() => flash.classList.remove('active'), 200);
     }
 
-    function copyTextFallback(text) {
-        let textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
+    function buildPlatformContent(platform, displayName, emoji) {
+        return `
+            <div class="platform-card">
+                <div class="platform-header">
+                    <span class="emoji">${emoji}</span>
+                    <span class="name rainbow-text">${displayName}</span>
+                </div>
+                <div class="platform-content" id="${platform}Content">
+                    <div class="config-wrapper">
+                        <div class="config-text" id="${platform}ConfigText"></div>
+                    </div>
+                    <button class="copy-btn" data-platform="${platform}">📋 Sao chép nội dung</button>
+                </div>
+            </div>
+        `;
     }
 
-    function createBird() {
-        const bird = document.createElement('div');
-        bird.className = 'bird';
-        bird.innerHTML = '🕊️'; 
-        const startX = Math.random() * (window.innerWidth - 60) + 20;
-        const startY = Math.random() * (window.innerHeight - 100) + 30;
-        bird.style.left = startX + 'px';
-        bird.style.top = startY + 'px';
-        const tx = (Math.random() - 0.5) * 320;
-        const ty = -Math.random() * 250 - 40;
-        bird.style.setProperty('--tx', tx + 'px');
-        bird.style.setProperty('--ty', ty + 'px');
-        document.body.appendChild(bird);
-        setTimeout(() => bird.remove(), 2000);
-    }
+    function attachEvents(platform) {
+        const header = document.querySelector(`.platform-header`);
+        const content = document.getElementById(`${platform}Content`);
+        const configDiv = document.getElementById(`${platform}ConfigText`);
+        const copyBtn = document.querySelector(`.copy-btn`);
 
-    function revealContent() {
-        configTextDiv.classList.add('revealed');
+        header.addEventListener('click', () => {
+            const isOpen = content.classList.contains('show');
+            if (!isOpen) {
+                content.classList.add('show');
+                configDiv.innerText = CONFIG_DATA;
+                setTimeout(() => {
+                    configDiv.classList.add('revealed');
+                }, 200);
+            } else {
+                content.classList.remove('show');
+            }
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            const textToCopy = configDiv.innerText;
+            if (!textToCopy || textToCopy.trim() === '') return;
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                flashScreen();
+                copyBtn.innerText = '✅ Đã copy!';
+                setTimeout(() => {
+                    copyBtn.innerText = '📋 Sao chép nội dung';
+                }, 1200);
+            } catch (err) {
+                let textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                flashScreen();
+                copyBtn.innerText = '✅ Đã copy!';
+                setTimeout(() => {
+                    copyBtn.innerText = '📋 Sao chép nội dung';
+                }, 1200);
+            }
+        });
     }
 
     function unlock() {
@@ -339,42 +389,21 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
 
         setTimeout(() => {
             spinner.style.display = 'none';
-            configTextDiv.innerText = CONFIG_DATA;
             resultPanel.style.display = 'block';
+            resultPanel.innerHTML = '';
+
+            if (isAndroid) {
+                resultPanel.innerHTML = buildPlatformContent('android', 'Android', '🤖');
+                attachEvents('android');
+            } else if (isIOS) {
+                resultPanel.innerHTML = buildPlatformContent('ios', 'iOS', '📱');
+                attachEvents('ios');
+            } else {
+                // Fallback cho máy tính: hiện cả hai? Theo yêu cầu chỉ hiện đúng thiết bị, nếu không phải mobile thì hiện thông báo
+                resultPanel.innerHTML = '<div style="text-align:center; padding:20px; color:#f97316;">⚠️ Truy cập bằng thiết bị Android hoặc iOS</div>';
+            }
         }, 2000);
     }
-
-    copyBtn.addEventListener('click', async () => {
-        const textToCopy = configTextDiv.innerText;
-        if (!textToCopy || textToCopy.trim() === '') return;
-        try {
-            await navigator.clipboard.writeText(textToCopy);
-            flashScreen();
-            copyBtn.innerText = '✅ Đã copy!';
-            for (let i = 0; i < 24; i++) {
-                setTimeout(() => createBird(), i * 65);
-            }
-            setTimeout(() => {
-                revealContent();
-            }, 1000);
-            setTimeout(() => {
-                copyBtn.innerText = '📋 Sao chép nội dung';
-            }, 2800);
-        } catch (err) {
-            copyTextFallback(textToCopy);
-            flashScreen();
-            copyBtn.innerText = '✅ Đã copy!';
-            for (let i = 0; i < 24; i++) {
-                setTimeout(() => createBird(), i * 65);
-            }
-            setTimeout(() => {
-                revealContent();
-            }, 1000);
-            setTimeout(() => {
-                copyBtn.innerText = '📋 Sao chép nội dung';
-            }, 2800);
-        }
-    });
 
     unlockBtn.addEventListener('click', unlock);
     passInput.addEventListener('keypress', (e) => {
@@ -395,7 +424,7 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
             const size = Math.random() * 8 + 5;
             div.style.width = size + 'px';
             div.style.height = size + 'px';
-            const colors = ['#ffaa33', '#ff55dd', '#ffaa33', '#ff6666', '#66ffcc'];
+            const colors = ['#ffaa33', '#ff55dd', '#55ffaa', '#ff6666', '#66ffcc'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             div.style.background = `radial-gradient(circle, ${color}, #ffaa33)`;
             div.style.boxShadow = `0 0 16px ${color}`;
@@ -414,20 +443,6 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
             createFalling(zone, 'spark');
         }
     }, 130);
-
-    // Counter API - countapi.xyz
-    async function updateHitCounter() {
-        const counterId = '4g-unlimited-data.github.io/4glau1/4glau2';
-        const url = `https://api.countapi.xyz/hit/${counterId}`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            document.getElementById('hitCounter').innerText = data.value;
-        } catch (error) {
-            document.getElementById('hitCounter').innerText = '?';
-        }
-    }
-    updateHitCounter();
 </script>
 </body>
 </html>
