@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Mật khẩu · Config</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            background: radial-gradient(circle at 10% 30%, #0a0f1e, #03050b);
+            font-family: system-ui, 'Segoe UI', 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .glow-bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 70% 20%, rgba(0, 180, 255, 0.2), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .effect-zone {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        .snowflake, .spark {
+            position: absolute;
+            top: -20px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+        .snowflake {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 12px cyan, 0 0 6px white;
+            width: 8px;
+            height: 8px;
+        }
+        .spark {
+            background: radial-gradient(circle, #ffdd77, #ffaa33);
+            box-shadow: 0 0 20px gold, 0 0 8px orange;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+        .flash.active { opacity: 1; }
+        .card {
+            background: rgba(20, 30, 45, 0.7);
+            backdrop-filter: blur(14px);
+            border-radius: 64px;
+            border: 1px solid rgba(72, 187, 255, 0.5);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(0, 255, 255, 0.2), 0 0 25px rgba(0, 180, 255, 0.4);
+            width: 100%;
+            max-width: 620px;
+            padding: 36px 28px 48px;
+            position: relative;
+            z-index: 10;
+        }
+        .lock-icon {
+            font-size: 64px;
+            text-align: center;
+            filter: drop-shadow(0 0 12px #00a6ff);
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 0 #00aaff; }
+            50% { text-shadow: 0 0 15px #00aaff; }
+            100% { text-shadow: 0 0 0 #00aaff; }
+        }
+        h2 {
+            text-align: center;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #E0F2FE, #7DD3FC, #38BDF8);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin: 16px 0 8px;
+        }
+        .sub {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            background: #11182780;
+            backdrop-filter: blur(4px);
+            display: inline-block;
+            width: auto;
+            padding: 6px 20px;
+            border-radius: 40px;
+            margin-bottom: 28px;
+        }
+        .input-group {
+            background: #0f172a;
+            border-radius: 100px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 6px 6px 6px 24px;
+            border: 1px solid #2d3a5e;
+            transition: 0.2s;
+        }
+        .input-group:focus-within {
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px #38bdf8;
+        }
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+        }
+        button {
+            background: linear-gradient(95deg, #2563eb, #1e40af);
+            border: none;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.5);
+        }
+        button:active { transform: scale(0.96); }
+        .error {
+            background: #2d1a1acc;
+            backdrop-filter: blur(4px);
+            color: #f97316;
+            padding: 12px;
+            border-radius: 60px;
+            text-align: center;
+            font-size: 0.75rem;
+            margin-top: 16px;
+            display: none;
+            border: 1px solid #f97316;
+        }
+        .loader {
+            width: 46px;
+            height: 46px;
+            border: 3px solid #1e293b;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            margin: 30px auto;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .result {
+            background: #0a0f1cee;
+            border-radius: 32px;
+            padding: 20px;
+            margin-top: 28px;
+            border: 1px solid #38bdf8;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            display: none;
+        }
+        .config-content {
+            background: #00000050;
+            padding: 16px;
+            border-radius: 24px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #b9f9f5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 20px;
+            border: 1px solid #2d3a5e;
+        }
+        .copy-btn {
+            background: linear-gradient(95deg, #10b981, #047857);
+            width: 100%;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 32px;
+            color: #6c7a91;
+        }
+        @media (max-width: 520px) {
+            .card { padding: 32px 18px 40px; }
+            h2 { font-size: 1.7rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="glow-bg"></div>
+<div class="effect-zone" id="effectZone"></div>
+<div class="flash" id="flashOverlay"></div>
+
+<div class="card">
+    <div class="lock-icon">🔐</div>
+    <h2>Mật khẩu</h2>
+    <div style="text-align: center;"><span class="sub">NHẬP KHÓA ĐỂ XEM CONFIG</span></div>
+
+    <div class="input-group">
+        <input type="password" id="passInput" placeholder="mật khẩu">
+        <button id="unlockBtn">Mở khóa</button>
+    </div>
+    <div id="errorMsg" class="error">❌ Sai mật khẩu, thử lại.</div>
+    <div id="spinner" class="loader"></div>
+
+    <div id="resultPanel" class="result">
+        <div class="config-content" id="configText"></div>
+        <button id="copyBtn" class="copy-btn">📋 Sao chép nội dung</button>
+    </div>
+    <div class="footer">🔒 Bảo vệ bằng mật khẩu</div>
+</div>
+
+<script>
+    const PASSWORD = "4glau";
+    const CONFIG_DATA = `vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encryption=none&host=t.tv360.vn&headerType=http&fp=chrome&type=tcp#%F0%9F%87%BB%F0%9F%87%B3Sever%20Nh%C3%A0%20L%C3%A0m%20Wifi
+trojan://a54ff16b-4358-4434-924b-58bc8e71821f@14.225.164.112:443?security=tls&insecure=1&headerType=none&type=tcp&allowInsecure=1&sni=t.tv360.vn#%F0%9F%87%BB%F0%9F%87%B3Sever%20M%E1%BA%A1nh%20Nh%E1%BA%A5t
+vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=none&encryption=none&host=t.tv360.vn&headerType=http&fp=chrome&type=tcp#%F0%9F%92%A0GAMING%F0%9F%92%A5
+vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=none&encryption=none&host=t.tv360.vn&headerType=http&type=tcp#SEVER%20GAME%F0%9F%8E%B4%F0%9F%8E%AE
+vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encryption=none&host=t.tv360.vn&headerType=http&type=tcp#%F0%9F%87%BB%F0%9F%87%B3Sever%20Nh%C3%A0%20L%C3%A0m%20Wifi`;
+
+    const passInput = document.getElementById('passInput');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const spinner = document.getElementById('spinner');
+    const resultPanel = document.getElementById('resultPanel');
+    const configTextDiv = document.getElementById('configText');
+    const copyBtn = document.getElementById('copyBtn');
+
+    function flashScreen() {
+        let flash = document.getElementById('flashOverlay');
+        flash.classList.add('active');
+        setTimeout(() => flash.classList.remove('active'), 300);
+    }
+
+    function copyTextFallback(text) {
+        let textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
+
+    function unlock() {
+        if (passInput.value.trim() !== PASSWORD) {
+            errorMsg.style.display = 'block';
+            resultPanel.style.display = 'none';
+            spinner.style.display = 'none';
+            passInput.value = '';
+            return;
+        }
+        errorMsg.style.display = 'none';
+        spinner.style.display = 'block';
+        resultPanel.style.display = 'none';
+
+        setTimeout(() => {
+            spinner.style.display = 'none';
+            configTextDiv.innerText = CONFIG_DATA;
+            resultPanel.style.display = 'block';
+        }, 2000);
+    }
+
+    copyBtn.addEventListener('click', async () => {
+        const textToCopy = configTextDiv.innerText;
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            flashScreen();
+            copyBtn.innerText = '✅ Đã copy!';
+            setTimeout(() => {
+                copyBtn.innerText = '📋 Sao chép nội dung';
+            }, 2000);
+        } catch (err) {
+            copyTextFallback(textToCopy);
+            flashScreen();
+            copyBtn.innerText = '✅ Đã copy!';
+            setTimeout(() => {
+                copyBtn.innerText = '📋 Sao chép nội dung';
+            }, 2000);
+        }
+    });
+
+    unlockBtn.addEventListener('click', unlock);
+    passInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') unlock();
+    });
+
+    function createFalling(parent, type) {
+        const div = document.createElement('div');
+        if (type === 'snow') {
+            div.classList.add('snowflake');
+            const size = Math.random() * 12 + 6;
+            div.style.width = size + 'px';
+            div.style.height = size + 'px';
+            div.style.background = `rgba(255, 255, 255, ${Math.random() * 0.6 + 0.4})`;
+            div.style.boxShadow = `0 0 ${Math.random() * 10 + 5}px cyan`;
+        } else {
+            div.classList.add('spark');
+            const size = Math.random() * 8 + 5;
+            div.style.width = size + 'px';
+            div.style.height = size + 'px';
+            const colors = ['#ffaa33', '#ff55dd', '#55ffaa', '#ff6666', '#66ffcc'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            div.style.background = `radial-gradient(circle, ${color}, #ffaa33)`;
+            div.style.boxShadow = `0 0 16px ${color}`;
+        }
+        div.style.left = Math.random() * 100 + '%';
+        div.style.animationDuration = Math.random() * 5 + 3 + 's';
+        div.style.animationDelay = Math.random() * 2 + 's';
+        parent.appendChild(div);
+        setTimeout(() => div.remove(), 6000);
+    }
+
+    setInterval(() => {
+        const zone = document.getElementById('effectZone');
+        if (zone) {
+            createFalling(zone, 'snow');
+            createFalling(zone, 'spark');
+        }
+    }, 150);
+</script>
+</body>
+</html>
