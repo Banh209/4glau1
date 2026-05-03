@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Mật khẩu · Config</title>
+    <!-- Hit Kounter -->
+    <script src="https://cdn.jsdelivr.net/npm/hit-kounter@0.1.0/dist/hit-kounter.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body {
@@ -55,7 +57,6 @@
         @keyframes fall {
             to { transform: translateY(100vh) rotate(360deg); opacity: 0.2; }
         }
-        /* Hiệu ứng chim bay */
         .bird {
             position: fixed;
             font-size: 24px;
@@ -65,14 +66,8 @@
             filter: drop-shadow(0 0 4px white);
         }
         @keyframes fly {
-            0% {
-                transform: translate(0, 0) scale(0.6);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx, 150px), var(--ty, -180px)) scale(1.3);
-                opacity: 0;
-            }
+            0% { transform: translate(0, 0) scale(0.6); opacity: 1; }
+            100% { transform: translate(var(--tx, 150px), var(--ty, -180px)) scale(1.3); opacity: 0; }
         }
         .flash {
             position: fixed;
@@ -189,7 +184,6 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
             display: none;
         }
-        /* Nội dung mờ */
         .config-content {
             background: #00000050;
             padding: 16px;
@@ -229,6 +223,27 @@
             margin-top: 32px;
             color: #6c7a91;
         }
+        /* Cầu vồng nhấp nháy cho chữ "lượt xem" */
+        @keyframes rainbow {
+            0% { color: red; text-shadow: 0 0 3px red; }
+            14% { color: orange; text-shadow: 0 0 3px orange; }
+            28% { color: yellow; text-shadow: 0 0 3px yellow; }
+            42% { color: green; text-shadow: 0 0 3px green; }
+            57% { color: cyan; text-shadow: 0 0 3px cyan; }
+            71% { color: blue; text-shadow: 0 0 3px blue; }
+            85% { color: violet; text-shadow: 0 0 3px violet; }
+            100% { color: red; text-shadow: 0 0 3px red; }
+        }
+        .rainbow-text {
+            animation: rainbow 1.5s infinite linear;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        /* Nhấp nháy cầu vồng cho dòng "NHẬP KHÓA ĐỂ XEM CONFIG" */
+        .sub {
+            animation: rainbow 1.5s infinite linear;
+            font-weight: bold;
+        }
         @media (max-width: 520px) {
             .card { padding: 32px 18px 40px; }
             h2 { font-size: 1.7rem; }
@@ -257,7 +272,11 @@
         <div class="config-content" id="configText"></div>
         <button id="copyBtn" class="copy-btn">📋 Sao chép nội dung</button>
     </div>
-    <div class="footer">🔒 Bảo vệ bằng mật khẩu</div>
+    <div class="footer">
+        🔒 Bảo vệ bằng mật khẩu | 
+        <span data-hk-page="current" style="font-weight: bold;">0</span> 
+        <span class="rainbow-text">lượt xem</span>
+    </div>
 </div>
 
 <script>
@@ -337,7 +356,6 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
             await navigator.clipboard.writeText(textToCopy);
             flashScreen();
             copyBtn.innerText = '✅ Đã copy!';
-            // 24 con chim bay rải rác
             for (let i = 0; i < 24; i++) {
                 setTimeout(() => createBird(), i * 65);
             }
