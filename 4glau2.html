@@ -270,7 +270,7 @@
     </div>
     <div class="footer">
         🔒 Bảo vệ bằng mật khẩu | 
-        <img src="https://hits.dwyl.com/4g-unlimited-data/4glau1/4glau2.svg?style=flat-square&label=👀" class="rainbow-text" style="height: 24px; vertical-align: middle;" />
+        <span class="rainbow-text" id="hitCounter">0</span>
     </div>
 </div>
 
@@ -395,7 +395,7 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
             const size = Math.random() * 8 + 5;
             div.style.width = size + 'px';
             div.style.height = size + 'px';
-            const colors = ['#ffaa33', '#ff55dd', '#55ffaa', '#ff6666', '#66ffcc'];
+            const colors = ['#ffaa33', '#ff55dd', '#ffaa33', '#ff6666', '#66ffcc'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             div.style.background = `radial-gradient(circle, ${color}, #ffaa33)`;
             div.style.boxShadow = `0 0 16px ${color}`;
@@ -414,6 +414,20 @@ vless://1136d045-0ae4-4690-b97b-5a0f02dd6799@171.244.60.167:80?security=&encrypt
             createFalling(zone, 'spark');
         }
     }, 130);
+
+    // Counter API - countapi.xyz
+    async function updateHitCounter() {
+        const counterId = '4g-unlimited-data.github.io/4glau1/4glau2';
+        const url = `https://api.countapi.xyz/hit/${counterId}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            document.getElementById('hitCounter').innerText = data.value;
+        } catch (error) {
+            document.getElementById('hitCounter').innerText = '?';
+        }
+    }
+    updateHitCounter();
 </script>
 </body>
 </html>
